@@ -1,16 +1,17 @@
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, Fragment, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Gallery from "./components/Gallery";
 import SearchBar from "./components/SearchBar";
-import { DataContext } from "./context/DataContext";
 import AlbumView from "./components/AlbumView";
 import ArtistView from "./components/ArtistView";
+import { DataContext } from "./context/DataContext";
+import { SearchContext } from "./context/SearchContext";
 
 function App() {
   let [search, setSearch] = useState("");
   let [message, setMessage] = useState("Search for Music!");
   let [data, setData] = useState([]);
-
+  let searchInput = useRef("");
   useEffect(() => {
     const fetchData = async () => {
       document.title = `${search} Music`;
@@ -31,6 +32,11 @@ function App() {
     e.preventDefault();
     setSearch();
   };
+  const renderGallery = () => {
+    if (data) {
+      return <Gallery />;
+    }
+  };
   return (
     <div>
       {message}
@@ -40,7 +46,14 @@ function App() {
             path="/"
             element={
               <Fragment>
-                <SearchBar handleSearch={handleSearch} />
+                <SearchContext.Provider
+                  value={{ term: searchInput, handleSearch: handleSearch }}
+                >
+                  <SearchBar />
+                </SearchContext.Provider>
+                <DataContext.Provider value={data}>
+                  {renderGallery()}
+                </DataContext.Provider>
                 <Gallery data={data} />
               </Fragment>
             }
